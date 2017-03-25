@@ -1,6 +1,6 @@
 {
   "name": "webpack-summary",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "Webpack plugin for displaying a short summary at the end of the build process.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

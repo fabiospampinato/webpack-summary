@@ -1,11 +1,14 @@
+import { options } from './types';
 declare class SummaryPlugin {
-    template: string;
+    options: options;
+    watching: boolean;
     startAt: number;
     endAt: number;
-    constructor(template?: string);
+    constructor(options?: Partial<options>);
     apply(compiler: any): void;
     onStart(): void;
-    onEnd(compilation: any, next: any): void;
+    onEnd(compilation: any, next: Function): void;
+    onWatch(compilation: any, next: Function): void;
     getTimeTokens(milliseconds: number): {
         ms: number;
         s: number;
@@ -47,6 +50,7 @@ declare class SummaryPlugin {
             };
         }[];
     };
+    getTemplate(): string;
     printTemplates(tokens: any): void;
     printTemplate(tokens: any): void;
 }

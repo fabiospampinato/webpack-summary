@@ -5,6 +5,7 @@ import * as _ from 'lodash';
 import {converterBase2 as byteConverter} from 'byte-converter';
 import findMatches from 'string-matches';
 import replaceAll from 'string-replace-all';
+import {options} from './types';
 
 /* WEBPACK SUMMARY */
 
@@ -12,15 +13,19 @@ class SummaryPlugin {
 
   /* VARIABLES */
 
-  template: string;
+  options: options;
+  watching: boolean = false;
   startAt: number;
   endAt: number;
 
   /* CONSTRUCTOR */
 
-  constructor ( template: string = `[{entry.name}] Bundled into "{entry.asset}" ({entry.size.MB}MB) in {time.s}s` ) {
+  constructor ( options?: Partial<options> ) {
 
-    this.template = template;
+    this.options = _.extend ({
+      normal: '[{entry.name}] Bundled into "{entry.asset}" ({entry.size.MB}MB) in {time.s}s',
+      watching: 'Bundle rebuilt in {time.s}s.'
+    }, options );
 
   }
 
@@ -30,6 +35,7 @@ class SummaryPlugin {
 
     compiler.plugin ( 'compilation', this.onStart.bind ( this ) );
     compiler.plugin ( 'emit', this.onEnd.bind ( this ) );
+    compiler.plugin ( 'watch-run', this.onWatch.bind ( this ) );
 
   }
 
@@ -39,7 +45,7 @@ class SummaryPlugin {
 
   }
 
-  onEnd ( compilation, next ) {
+  onEnd ( compilation, next: Function ) {
 
     this.endAt = Date.now ();
 
@@ -47,6 +53,14 @@ class SummaryPlugin {
           tokens = this.getTokens ( stats );
 
     this.printTemplates ( tokens );
+
+    next ();
+
+  }
+
+  onWatch (compilation, next: Function ) {
+
+    this.watching = true;
 
     next ();
 
@@ -104,11 +118,21 @@ class SummaryPlugin {
 
   }
 
-  /* PRINT */
+  /* TEMPLATE */
+
+  getTemplate () {
+
+    return this.options[ this.watching ? 'watching' : 'normal' ];
+
+  }
 
   printTemplates ( tokens ) {
 
-    const hasEntryToken = this.template.includes ( '{entry.' );
+    const template = this.getTemplate ();
+
+    if ( !template ) return;
+
+    const hasEntryToken = template.includes ( '{entry.' );
 
     if ( !hasEntryToken ) return this.printTemplate ( tokens );
 
@@ -124,8 +148,11 @@ class SummaryPlugin {
 
   printTemplate ( tokens ) {
 
-    let summary = this.template,
-        placeholders = findMatches ( summary, /{[a-zA-Z0-9\._]+}/g ).map ( _.first ) as string[];
+    let summary = this.getTemplate ();
+
+    if ( !summary ) return;
+
+    let placeholders = findMatches ( summary, /{[a-zA-Z0-9\._]+}/g ).map ( _.first ) as string[];
 
     for ( let placeholder of placeholders ) {
 

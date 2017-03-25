@@ -18,18 +18,33 @@ $ npm install --save webpack-summary
 ```js
 import SummaryPlugin from 'webpack-summary';
 
+const options = {/* ... */};
+
 export default {
   /* ... */
   plugins: [
     /* ... */
-    new SummaryPlugin ()
+    new SummaryPlugin ( options )
   ]
+};
+```
+
+## Options
+
+The optional options object has the following shape:
+
+```js
+{
+  normal: template,
+  watching: template
 }
 ```
 
-## Summary template
+And it defines the templates to use when in watching mode or not.
 
-This plugin accepts a single, optional, argument: a template.
+If a falsy value is used as a template nothing will be outputted.
+
+## Template
 
 A template is just a string that may contain placeholders, that look like `{foo}` or `{foo.bar}`, that will be replaced with the appropriate value.
 
@@ -37,11 +52,13 @@ Some example templates:
 
 `[{entry.name}] Bundled into "{entry.asset}" ({entry.size.MB}MB) in {time.s}s`
 
+`Bundle rebuilt in {time.s}s.`
+
 `Webpack {stats.version} - Bundled in {time.s} seconds.`
 
 `Bundled in {time.m} minutes. {stats.errors.length} errors. {stats.warnings.length} warnings.`
 
-## Template placeholders
+## Placeholders
 
 A placeholder is just a path that retrieves a value from the following object:
 
