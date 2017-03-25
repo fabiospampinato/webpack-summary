@@ -78,7 +78,12 @@ class SummaryPlugin {
 
     const names  = Object.keys ( stats.entrypoints ),
           assets = names.map ( name => stats.assetsByChunkName[name] ),
-          sizes  = assets.map ( asset => stats.assets.find ( obj => obj.name === asset ).size );
+          sizes  = assets.map ( asset => {
+            const assets = _.castArray ( asset ),
+                  objs = stats.assets.filter ( obj => assets.includes ( obj.name ) ),
+                  sizes = _.map ( objs, 'size' );
+            return _.sum ( sizes );
+          });
 
     return names.map ( ( name, index ) => ({
       name,
@@ -125,9 +130,9 @@ class SummaryPlugin {
     for ( let placeholder of placeholders ) {
 
       const accessor = placeholder.slice ( 1, -1 ),
-            value = String ( _.get ( tokens, accessor ) );
+            value = _.get ( tokens, accessor );
 
-      summary = replaceAll ( summary, placeholder, value );
+      summary = replaceAll ( summary, placeholder, _.isArray ( value ) ? value.join ( ', ' ) : String ( value ) );
 
     }
 
