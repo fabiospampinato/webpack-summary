@@ -39,7 +39,7 @@ class SummaryPlugin {
 
   }
 
-  onEnd ( compilation ) {
+  onEnd ( compilation, next ) {
 
     this.endAt = Date.now ();
 
@@ -47,6 +47,8 @@ class SummaryPlugin {
           tokens = this.getTokens ( stats );
 
     this.printTemplates ( tokens );
+
+    next ();
 
   }
 

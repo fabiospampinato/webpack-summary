@@ -5,7 +5,7 @@ declare class SummaryPlugin {
     constructor(template?: string);
     apply(compiler: any): void;
     onStart(): void;
-    onEnd(compilation: any): void;
+    onEnd(compilation: any, next: any): void;
     getTimeTokens(milliseconds: number): {
         ms: number;
         s: number;
