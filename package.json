@@ -35,7 +35,11 @@
     "type": "git",
     "url": "https://github.com/fabiospampinato/webpack-summary.git"
   },
-  "keywords": [],
+  "keywords": [
+    "webpack",
+    "plugin",
+    "summary"
+  ],
   "dependencies": {
     "@types/lodash": "^4.14.58",
     "byte-converter": "^0.1.4",
