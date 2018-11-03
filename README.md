@@ -1,8 +1,5 @@
 # Webpack Summary
 
-![Issues](https://img.shields.io/github/issues/fabiospampinato/webpack-summary.svg)
-[![NPM version](https://img.shields.io/npm/v/webpack-summary.svg)](https://www.npmjs.com/package/webpack-summary)
-
 Webpack plugin for displaying a short summary at the end of the build process.
 
 Useful for replacing the many lines of Webpack's output to the terminal with a single, concise, customizable line containing all the info you need.
