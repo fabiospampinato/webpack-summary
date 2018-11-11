@@ -5,16 +5,9 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "clean:dist": "rimraf dist",
-    "clean:coverage": "rimraf coverage .nyc_output",
-    "clean": "npm run clean:dist && npm run clean:coverage",
+    "clean": "rimraf dist",
     "compile": "tsc --skipLibCheck",
     "compile:watch": "tsc --skipLibCheck --watch",
-    "test": "ava",
-    "test:watch": "ava --watch",
-    "coverage": "nyc --reporter=html ava",
-    "report": "nyc report",
-    "report:html": "open coverage/index.html",
     "prepublishOnly": "npm run clean && npm run compile"
   },
   "ava": {
