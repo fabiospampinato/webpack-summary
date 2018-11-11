@@ -171,4 +171,4 @@ class SummaryPlugin {
 
 /* EXPORT */
 
-export = Object.assign ( SummaryPlugin, { default: SummaryPlugin } );
+export default SummaryPlugin;

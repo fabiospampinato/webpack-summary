@@ -6,7 +6,7 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "clean": "rimraf dist",
-    "compile": "tsc --skipLibCheck",
+    "compile": "tsc --skipLibCheck && tstei",
     "compile:watch": "tsc --skipLibCheck --watch",
     "prepublishOnly": "npm run clean && npm run compile"
   },
@@ -36,14 +36,15 @@
     "@types/lodash": "^4.14.58",
     "byte-converter": "^0.1.4",
     "lodash": "^4.17.4",
-    "string-matches": "^1.0.1",
-    "string-replace-all": "^1.0.0"
+    "string-matches": "^1.1.2",
+    "string-replace-all": "^1.0.2"
   },
   "devDependencies": {
     "ava": "^0.18.2",
     "ava-spec": "^1.1.0",
     "nyc": "^10.1.2",
     "rimraf": "^2.6.0",
-    "typescript": "~3.0.3"
+    "typescript": "~3.0.3",
+    "typescript-transform-export-interop": "^1.0.0"
   }
 }
