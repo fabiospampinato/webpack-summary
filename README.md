@@ -32,14 +32,20 @@ The optional options object has the following shape:
 
 ```js
 {
-  normal: template,
-  watching: template
+  normal: {
+    entry: template | false,
+    chunk: template | false
+  },
+  watching: {
+    entry: template | false,
+    chunk: template | false
+  }
 }
 ```
 
 And it defines the templates to use when in watching mode or not.
 
-If a falsy value is used as a template nothing will be outputted.
+If a falsy value is used as a template it will not be rendered.
 
 ## Template
 
@@ -84,7 +90,7 @@ A placeholder is just a path that retrieves a value from the following object:
 }
 ```
 
-There's also a special path, `entry`. If you use it a summary will be displayed for each of the entries in your Webpack configuration. The shape of the `entry` object will be that of one of the elements of `entries`.
+There are also two special paths, `entry` and `chunk`, each available in their related templates.
 
 ## License
 

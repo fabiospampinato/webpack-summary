@@ -5,7 +5,7 @@ import * as _ from 'lodash';
 import {converterBase2 as byteConverter} from 'byte-converter';
 import findMatches from 'string-matches';
 import replaceAll from 'string-replace-all';
-import {options} from './types';
+import {Options} from './types';
 
 /* WEBPACK SUMMARY */
 
@@ -13,18 +13,25 @@ class SummaryPlugin {
 
   /* VARIABLES */
 
-  options: options;
+  options: Options;
   watching: boolean = false;
+  stats: any;
   startAt: number;
   endAt: number;
 
   /* CONSTRUCTOR */
 
-  constructor ( options?: Partial<options> ) {
+  constructor ( options?: Partial<Options> ) {
 
-    this.options = _.extend ({
-      normal: '[{entry.name}] Bundled into "{entry.asset}" ({entry.size.MB}MB) in {time.s}s',
-      watching: 'Bundle rebuilt in {time.s}s.'
+    this.options = _.merge ({
+      normal: {
+        entry: '{entry.name} - {entry.size.KB}KB - {time.s}s',
+        chunk: '• {chunk.name} - {chunk.size.KB}KB'
+      },
+      watching: {
+        entry: '{entry.name} - {time.s}s',
+        chunk: false
+      }
     }, options );
 
   }
@@ -33,9 +40,10 @@ class SummaryPlugin {
 
   apply ( compiler ) {
 
-    compiler.plugin ( 'compilation', this.onStart.bind ( this ) );
-    compiler.plugin ( 'emit', this.onEnd.bind ( this ) );
-    compiler.plugin ( 'watch-run', this.onWatch.bind ( this ) );
+    compiler.hooks.compilation.tap ( 'SummaryPlugin', this.onStart.bind ( this ) );
+    compiler.hooks.emit.tap ( 'SummaryPlugin', this.onCompilation.bind ( this ) );
+    compiler.hooks.done.tap ( 'SummaryPlugin', this.onEnd.bind ( this ) );
+    compiler.hooks.watchRun.tap ( 'SummaryPlugin', this.onWatch.bind ( this ) );
 
   }
 
@@ -45,24 +53,25 @@ class SummaryPlugin {
 
   }
 
-  onEnd ( compilation, next: Function ) {
+  onCompilation ( compilation ) {
 
     this.endAt = Date.now ();
 
-    const stats = compilation.getStats ().toJson (),
-          tokens = this.getTokens ( stats );
-
-    this.printTemplates ( tokens );
-
-    next ();
+    this.stats = compilation.getStats ().toJson ();
 
   }
 
-  onWatch (compilation, next: Function ) {
+  onEnd () {
+
+    const tokens = this.getTokens ( this.stats );
+
+    this.printTemplates ( tokens );
+
+  }
+
+  onWatch () {
 
     this.watching = true;
-
-    next ();
 
   }
 
@@ -101,7 +110,22 @@ class SummaryPlugin {
 
     return names.map ( ( name, index ) => ({
       name,
-      asset: assets[index],
+      size: this.getSizeTokens ( sizes[index] )
+    }));
+
+  }
+
+  getChunksTokens ( stats ) {
+
+    const names = stats.chunks.map ( chunk => chunk.files[0] ),
+          sizes = names.map ( name => {
+            const objs = stats.assets.filter ( obj => obj.name === name ),
+                  sizes = _.map ( objs, 'size' );
+            return _.sum ( sizes );
+          });
+
+    return names.map ( ( name, index ) => ({
+      name,
       size: this.getSizeTokens ( sizes[index] )
     }));
 
@@ -113,57 +137,66 @@ class SummaryPlugin {
       stats,
       size: this.getSizeTokens ( _.sum ( _.map ( stats.assets, 'size' ) ) ),
       time: this.getTimeTokens ( this.endAt - this.startAt ),
-      entries: this.getEntriesTokens ( stats )
+      entries: this.getEntriesTokens ( stats ),
+      chunks: this.getChunksTokens ( stats )
     };
 
   }
 
   /* TEMPLATE */
 
-  getTemplate () {
+  getTemplate ( key ) {
 
-    return this.options[ this.watching ? 'watching' : 'normal' ];
+    return this.options[ this.watching ? 'watching' : 'normal' ][key];
 
   }
 
   printTemplates ( tokens ) {
 
-    const template = this.getTemplate ();
+    const templateEntry = this.getTemplate ( 'entry' );
 
-    if ( !template ) return;
+    if ( templateEntry ) {
 
-    const hasEntryToken = template.includes ( '{entry.' );
+      for ( let entry of tokens.entries ) {
 
-    if ( !hasEntryToken ) return this.printTemplate ( tokens );
+        const tokensEntry = _.extend ( {}, tokens, {entry} );
 
-    for ( let entry of tokens.entries ) {
+        this.printTemplate ( templateEntry, tokensEntry );
 
-      const entryTokens = _.extend ( {}, tokens, {entry} );
+      }
 
-      this.printTemplate ( entryTokens );
+    }
+
+    const templateChunk = this.getTemplate ( 'chunk' );
+
+    if ( templateChunk ) {
+
+      for ( let chunk of tokens.chunks ) {
+
+        const tokensChunk = _.extend ( {}, tokens, {chunk} );
+
+        this.printTemplate ( templateChunk, tokensChunk );
+
+      }
 
     }
 
   }
 
-  printTemplate ( tokens ) {
+  printTemplate ( template, tokens ) {
 
-    let summary = this.getTemplate ();
-
-    if ( !summary ) return;
-
-    let placeholders = findMatches ( summary, /{[a-zA-Z0-9\._]+}/g ).map ( _.first ) as string[];
+    const placeholders = findMatches ( template, /{[a-zA-Z0-9\._]+}/g ).map ( _.first ) as string[];
 
     for ( let placeholder of placeholders ) {
 
       const accessor = placeholder.slice ( 1, -1 ),
             value = _.get ( tokens, accessor );
 
-      summary = replaceAll ( summary, placeholder, _.isArray ( value ) ? value.join ( ', ' ) : String ( value ) );
+      template = replaceAll ( template, placeholder, _.isArray ( value ) ? value.join ( ', ' ) : String ( value ) );
 
     }
 
-    console.log ( summary );
+    console.log ( template );
 
   }
 
