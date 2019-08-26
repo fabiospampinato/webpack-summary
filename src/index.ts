@@ -99,7 +99,7 @@ class SummaryPlugin {
 
   getEntriesTokens ( stats ) {
 
-    const names  = Object.keys ( stats.entrypoints ),
+    const names  = Object.keys ( stats.entrypoints ).sort (),
           assets = names.map ( name => stats.assetsByChunkName[name] ),
           sizes  = assets.map ( asset => {
             const assets = _.castArray ( asset ),
@@ -117,7 +117,7 @@ class SummaryPlugin {
 
   getChunksTokens ( stats ) {
 
-    const names = stats.chunks.map ( chunk => chunk.files[0] ),
+    const names = stats.chunks.map ( chunk => chunk.files[0] ).sort (),
           sizes = names.map ( name => {
             const objs = stats.assets.filter ( obj => obj.name === name ),
                   sizes = _.map ( objs, 'size' );
