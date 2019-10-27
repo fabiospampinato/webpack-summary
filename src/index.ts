@@ -61,7 +61,9 @@ class SummaryPlugin {
 
   }
 
-  onEnd () {
+  onEnd ( stats? ) {
+
+    if ( !this.stats && stats ) this.stats = stats.toJson ();
 
     const tokens = this.getTokens ( this.stats );
 
